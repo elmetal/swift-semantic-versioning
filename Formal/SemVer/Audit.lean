@@ -1,5 +1,6 @@
 import SemVer.Theorems.Increment
 import SemVer.Parser.Version
+import SemVer.Model.Correctness
 
 /-!
 # 公理の監査
@@ -84,3 +85,23 @@ info: 'SemVer.Spec.Components.WF.toComponents_toVersion' depends on axioms: [pro
 info: 'SemVer.Spec.Version.WF.toVersion_toComponents' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs in #print axioms Version.WF.toVersion_toComponents
+
+/-! ## 実装モデル -/
+
+/-- info: 'SemVer.numericLt_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms numericLt_iff
+
+/--
+info: 'SemVer.Spec.Components.lt_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.lt_iff
+
+/--
+info: 'SemVer.Spec.Components.precedenceEq_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.precedenceEq_iff
+
+/--
+info: 'SemVer.Spec.Components.lt_trichotomous' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.lt_trichotomous
