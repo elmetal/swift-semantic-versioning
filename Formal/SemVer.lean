@@ -2,4 +2,8 @@ import SemVer.Spec.Grammar
 import SemVer.Spec.Precedence
 import SemVer.Spec.Increment
 import SemVer.Spec.Decidable
+import SemVer.Theorems.Order
+import SemVer.Theorems.Precedence
+import SemVer.Theorems.Increment
 import SemVer.Examples
+import SemVer.Audit
