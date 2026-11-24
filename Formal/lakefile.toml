@@ -1,6 +1,6 @@
 name = "SemVer"
 version = "0.1.0"
-defaultTargets = ["SemVer"]
+defaultTargets = ["SemVer", "vectors"]
 
 # `sorry` や未使用変数などの警告をすべてビルド失敗として扱う。
 [leanOptions]
@@ -9,3 +9,8 @@ autoImplicit = false
 
 [[lean_lib]]
 name = "SemVer"
+
+# Swift 実装との差分テスト用ベクタを生成する実行ファイル。
+[[lean_exe]]
+name = "vectors"
+root = "Vectors"
