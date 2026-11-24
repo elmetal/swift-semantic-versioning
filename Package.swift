@@ -24,6 +24,8 @@ let package = Package(
         .testTarget(
             name: "SemanticVersioningTests",
             dependencies: ["SemanticVersioning"],
+            // Formal/ の Lean から `lake exe vectors` で生成したテストベクタ。
+            resources: [.copy("Vectors")],
             swiftSettings: [
                 .enableUpcomingFeature("ApproachableConcurrency"),
             ],
