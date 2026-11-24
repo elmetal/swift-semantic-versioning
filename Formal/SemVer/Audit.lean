@@ -1,5 +1,5 @@
 import SemVer.Theorems.Increment
-import SemVer.Parser.Correctness
+import SemVer.Parser.Version
 
 /-!
 # 公理の監査
@@ -53,7 +53,34 @@ open SemVer SemVer.Spec
 /-- info: 'SemVer.validSemVer_iff_parse' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms validSemVer_iff_parse
 
+/-- info: 'SemVer.parseVersion_sound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms parseVersion_sound
+
+/-- info: 'SemVer.parseVersion_complete' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms parseVersion_complete
+
+/-- info: 'SemVer.validSemVer_iff_parseVersion' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms validSemVer_iff_parseVersion
+
+/-- info: 'SemVer.validSemVer_iff_version' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms validSemVer_iff_version
+
 /--
 info: 'SemVer.Spec.Components.render_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs in #print axioms Components.render_injective
+
+/--
+info: 'SemVer.Spec.Version.render_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Version.render_injective
+
+/--
+info: 'SemVer.Spec.Components.WF.toComponents_toVersion' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.WF.toComponents_toVersion
+
+/--
+info: 'SemVer.Spec.Version.WF.toVersion_toComponents' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Version.WF.toVersion_toComponents
