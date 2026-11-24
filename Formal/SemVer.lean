@@ -1,9 +1,14 @@
 import SemVer.Spec.Grammar
+import SemVer.Spec.Components
 import SemVer.Spec.Precedence
 import SemVer.Spec.Increment
 import SemVer.Spec.Decidable
 import SemVer.Theorems.Order
 import SemVer.Theorems.Precedence
 import SemVer.Theorems.Increment
+import SemVer.Theorems.Identifiers
+import SemVer.Parser.Split
+import SemVer.Parser.Components
+import SemVer.Parser.Correctness
 import SemVer.Examples
 import SemVer.Audit

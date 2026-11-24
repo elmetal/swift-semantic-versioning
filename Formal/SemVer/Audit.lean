@@ -1,10 +1,13 @@
 import SemVer.Theorems.Increment
+import SemVer.Parser.Correctness
 
 /-!
 # 公理の監査
 
 主要な定理が依存する公理を固定する。`sorryAx` や想定外の公理が混入すると、
 出力が下の期待と食い違ってビルドが失敗する。
+
+`propext`、`Classical.choice`、`Quot.sound` は Lean の標準の公理で、`simp`、`omega`、`by_cases` が使う。
 -/
 
 open SemVer SemVer.Spec
@@ -35,3 +38,22 @@ open SemVer SemVer.Spec
 
 /-- info: 'SemVer.Spec.Version.lt_nextMajor' does not depend on any axioms -/
 #guard_msgs in #print axioms Version.lt_nextMajor
+
+/-! ## 文法と文字列の対応 -/
+
+/-- info: 'SemVer.validSemVer_iff_components' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms validSemVer_iff_components
+
+/-- info: 'SemVer.parse_sound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms parse_sound
+
+/-- info: 'SemVer.parse_complete' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms parse_complete
+
+/-- info: 'SemVer.validSemVer_iff_parse' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms validSemVer_iff_parse
+
+/--
+info: 'SemVer.Spec.Components.render_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.render_injective
