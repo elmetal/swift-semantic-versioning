@@ -37,7 +37,21 @@ open SemVer SemVer.Spec
 /-- info: 'SemVer.Spec.PreReleaseLt.append_right' does not depend on any axioms -/
 #guard_msgs in #print axioms PreReleaseLt.append_right
 
-/-- info: 'SemVer.Spec.Version.lt_nextMajor' does not depend on any axioms -/
+/-! ## 繰り上げ -/
+
+/-- info: 'SemVer.Spec.Version.nextPatch_isLeast' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms Version.nextPatch_isLeast
+
+/-- info: 'SemVer.Spec.Version.nextMinor_isLeast' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms Version.nextMinor_isLeast
+
+/-- info: 'SemVer.Spec.Version.nextMajor_isLeast' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms Version.nextMajor_isLeast
+
+/-- info: 'SemVer.Spec.IsLeastAbove.unique' does not depend on any axioms -/
+#guard_msgs in #print axioms IsLeastAbove.unique
+
+/-- info: 'SemVer.Spec.Version.lt_nextMajor' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms Version.lt_nextMajor
 
 /-! ## 文法と文字列の対応 -/

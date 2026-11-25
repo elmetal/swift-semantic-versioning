@@ -97,8 +97,22 @@ private def increasing : List Version → Bool
 
 /-! ## 繰り上げ(§6〜§8) -/
 
+/- 通常バージョンは、数値を 1 上げて下位を 0 に戻す。 -/
 #guard (v 1 2 3).nextPatch = v 1 2 4
 #guard (v 1 2 3).nextMinor = v 1 3 0
 #guard (v 1 2 3).nextMajor = v 2 0 0
+#guard (v 1 1 0).nextMajor = v 2 0 0
+
+/- プレリリース版は、条件を満たせば対応する通常バージョンになる(node-semver の inc と同じ)。 -/
+#guard (v 1 2 3 [a "rc", n 1]).nextPatch = v 1 2 3
+#guard (v 1 2 0 [n 5]).nextPatch = v 1 2 0
+#guard (v 1 2 0 [n 5]).nextMinor = v 1 2 0
+#guard (v 1 2 3 [a "rc", n 1]).nextMinor = v 1 3 0
+#guard (v 1 0 0 [n 5]).nextMajor = v 1 0 0
+#guard (v 1 2 0 [a "rc"]).nextMajor = v 2 0 0
+#guard (v 1 0 3 [a "rc"]).nextMajor = v 2 0 0
+
+/- 結果にビルドメタデータは付かない。 -/
+#guard ({ v 1 2 3 with build := ["b".toUTF8.toList] } : Version).nextPatch = v 1 2 4
 
 end SemVer.Spec.Examples
