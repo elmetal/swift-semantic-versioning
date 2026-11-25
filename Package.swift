@@ -8,22 +8,24 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "swift-semantic-versioning",
-            targets: ["swift_semantic_versioning"]
+            name: "SemanticVersioning",
+            targets: ["SemanticVersioning"]
         ),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "swift_semantic_versioning",
+            name: "SemanticVersioning",
             swiftSettings: [
                 .enableUpcomingFeature("ApproachableConcurrency"),
             ],
         ),
         .testTarget(
-            name: "swift_semantic_versioningTests",
-            dependencies: ["swift_semantic_versioning"],
+            name: "SemanticVersioningTests",
+            dependencies: ["SemanticVersioning"],
+            // Formal/ の Lean から `lake exe vectors` で生成したテストベクタ。
+            resources: [.copy("Vectors")],
             swiftSettings: [
                 .enableUpcomingFeature("ApproachableConcurrency"),
             ],
