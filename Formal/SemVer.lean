@@ -16,6 +16,8 @@ import SemVer.Parser.Version
 import SemVer.Parser.Examples
 import SemVer.Model.Precedence
 import SemVer.Model.Correctness
+import SemVer.Model.Increment
+import SemVer.Model.IncrementCorrectness
 import SemVer.Model.Examples
 import SemVer.Examples
 import SemVer.Audit

@@ -163,6 +163,11 @@ theorem Spec.Components.render_injective {c₁ c₂ : Components} (h₁ : c₁.W
     (h : c₁.render = c₂.render) : c₁ = c₂ :=
   Option.some.inj ((parse_complete h₁).symm.trans (h ▸ parse_complete h₂))
 
+/-- 妥当な構成要素が等しいことと、文字列にしたものが等しいことは同じ。 -/
+theorem Spec.Components.eq_iff_render_eq {c₁ c₂ : Components} (h₁ : c₁.WF) (h₂ : c₂.WF) :
+    c₁ = c₂ ↔ c₁.render = c₂.render :=
+  ⟨fun h => h ▸ rfl, Components.render_injective h₁ h₂⟩
+
 /-! ## BNF との対応 -/
 
 theorem dotSeparatedPreReleaseIdentifiers_join : ∀ (is : List (List Byte)) (i : List Byte),

@@ -1,4 +1,5 @@
 import SemVer.Model.Correctness
+import SemVer.Model.IncrementCorrectness
 import SemVer.Parser.Correctness
 
 /-!
@@ -65,5 +66,35 @@ private def agree (a b : String) : Bool :=
   | _, _ => false
 
 #guard samples.all fun a => samples.all fun b => agree a b
+
+/-! ## 繰り上げ -/
+
+private def next (f : Components → Components) (s : String) : Option String :=
+  (parse (bytes s)).map fun c => String.ofList ((f c).render.map fun b => Char.ofNat b.toNat)
+
+#guard next Components.nextPatch "1.2.3" = some "1.2.4"
+#guard next Components.nextPatch "1.2.9" = some "1.2.10"
+#guard next Components.nextPatch "1.2.3-rc.1" = some "1.2.3"
+#guard next Components.nextPatch "1.2.3+build" = some "1.2.4"
+#guard next Components.nextMinor "1.9.3" = some "1.10.0"
+#guard next Components.nextMinor "1.2.0-rc.1" = some "1.2.0"
+#guard next Components.nextMinor "1.2.3-rc.1" = some "1.3.0"
+#guard next Components.nextMajor "9.1.0-rc.1" = some "10.0.0"
+#guard next Components.nextMajor "2.0.0-rc.1" = some "2.0.0"
+#guard next Components.nextMajor "99.99.99" = some "100.0.0"
+
+/- 整数型に収まらない桁数でも繰り上がる。 -/
+#guard next Components.nextPatch "1.2.18446744073709551615" = some "1.2.18446744073709551616"
+#guard next Components.nextMajor "99999999999999999999999.0.0"
+  = some "100000000000000000000000.0.0"
+
+/- 仕様の繰り上げと同じ結果になる。 -/
+#guard samples.all fun s =>
+  match parse (bytes s) with
+  | some c =>
+    c.nextPatch.toVersion = c.toVersion.nextPatch &&
+      c.nextMinor.toVersion = c.toVersion.nextMinor &&
+      c.nextMajor.toVersion = c.toVersion.nextMajor
+  | none => false
 
 end SemVer.Model.Examples

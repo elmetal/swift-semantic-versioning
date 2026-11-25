@@ -147,4 +147,63 @@ struct VectorTests {
         let sorted = versions.shuffled().sorted { $0.version < $1.version }
         #expect(sorted.map(\.rank) == versions.map(\.rank))
     }
+
+    @Test("見本のすべてについて、繰り上げの結果が一致する")
+    func increment() throws {
+        let rows = try Self.lines(of: "increment")
+        #expect(rows.count > 1_000)
+        var mismatches: [String] = []
+        for row in rows {
+            let fields = row.split(separator: " ")
+            try #require(fields.count == 4)
+            let version = try #require(SemanticVersion(String(fields[0])))
+            let results = [version.nextPatch, version.nextMinor, version.nextMajor]
+            var ok = true
+            for (result, expected) in zip(results, fields.dropFirst()) {
+                ok = ok && result.description == expected
+                // 結果は元より高い通常バージョンで、文字列から読み直しても同じ。
+                ok = ok && version < result && !result.isPrerelease
+                ok = ok && result.buildMetadataIdentifiers.isEmpty
+                ok = ok && (SemanticVersion(result.description).map(result.isIdentical(to:)) ?? false)
+            }
+            // パッチ、マイナー、メジャーの順に低くない。
+            ok = ok && !(results[1] < results[0]) && !(results[2] < results[1])
+            if !ok && mismatches.count < 20 {
+                mismatches.append(String(row))
+            }
+        }
+        #expect(mismatches.isEmpty, "\(mismatches)")
+    }
+
+    @Test("数値からの生成が Lean の 10 進表記と一致する")
+    func decimal() throws {
+        let rows = try Self.lines(of: "decimal")
+        #expect(rows.count > 30)
+        var checked = 0
+        for row in rows {
+            let fields = row.split(separator: " ")
+            try #require(fields.count == 2)
+            // UInt に収まらない値(32 ビット環境)は対象外。
+            guard let n = UInt(fields[0]) else {
+                continue
+            }
+            let version = SemanticVersion(major: n, minor: n, patch: n)
+            #expect(version.description == "\(fields[1]).\(fields[1]).\(fields[1])")
+            checked += 1
+        }
+        #expect(checked > 20)
+    }
+
+    @Test("isIdentical は文字列が等しいことと一致する")
+    func identical() throws {
+        let strings = try Self.lines(of: "precedence").flatMap { $0.split(separator: " ") }
+        let versions = try strings.map { try #require(SemanticVersion(String($0))) }
+        var mismatches = 0
+        for (a, x) in zip(versions, strings) {
+            for (b, y) in zip(versions, strings) where a.isIdentical(to: b) != (x == y) {
+                mismatches += 1
+            }
+        }
+        #expect(mismatches == 0)
+    }
 }

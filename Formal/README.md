@@ -26,11 +26,11 @@ lake exe vectors ../Tests/SemanticVersioningTests/Vectors
 | `SemVer/Spec/Precedence.lean` | 抽象的なバージョンと §11 の優先順位 | 信頼の基点 |
 | `SemVer/Spec/Components.lean` | 文字列の構成要素(識別子はバイト列のまま) | 信頼の基点 |
 | `SemVer/Spec/Denotation.lean` | 構成要素が表すバージョン(10 進数の解釈) | 信頼の基点 |
-| `SemVer/Spec/Increment.lean` | §6〜§8 の繰り上げ | 信頼の基点 |
+| `SemVer/Spec/Increment.lean` | §6〜§8 の繰り上げ(「元より高い、その種類のリリースのうち最も低いもの」) | 信頼の基点 |
 | `SemVer/Spec/Decidable.lean` | 例を評価するための判定インスタンス | 仕様の意味を変えない |
 | `SemVer/Theorems/` | 仕様から導かれる定理 | Lean が検査する |
 | `SemVer/Parser/` | 参照パーサと、BNF との同値性の証明 | Lean が検査する |
-| `SemVer/Model/` | バイト列のままの比較(Swift の `<` と `==` の写し)と、§11 との一致の証明 | Lean が検査する |
+| `SemVer/Model/` | バイト列のままの比較と繰り上げ(Swift 実装の写し)と、仕様との一致の証明 | Lean が検査する |
 | `SemVer/Examples.lean`, `SemVer/*/Examples.lean` | 具体例による点検 | テスト(証明ではない) |
 | `SemVer/Audit.lean` | 定理が依存する公理の固定 | Lean が検査する |
 | `Vectors.lean` | Swift との差分テスト用ベクタの生成 | 証明済みの定義を実行するだけ |
@@ -54,7 +54,7 @@ Swift 実装の値は `Components` に対応させる。数値識別子を整数
 | --- | --- | --- | --- |
 | BNF | 妥当なバージョン文字列 | `ValidSemVer` ほか `Grammar.lean` の全定義 | `validSemVer_iff_parse`, `validSemVer_iff_components`, `validSemVer_iff_version` |
 | §2 | X.Y.Z は先頭ゼロのない非負整数 | `NumericIdentifier`, `decimalValue` | `numericIdentifier_iff`, `decimalValue_decimalDigits`, `NumericIdentifier.decimalDigits_decimalValue` |
-| §6〜§8 | 繰り上げと下位桁のリセット | `Version.nextPatch` / `nextMinor` / `nextMajor` | `lt_nextPatch`, `lt_nextMinor`, `lt_nextMajor`, `nextMinor_patch`, `nextMajor_minor_patch` |
+| §6〜§8 | 繰り上げと下位桁のリセット | `Version.nextPatch` / `nextMinor` / `nextMajor`, `IsLeastAbove` | `nextPatch_isLeast`, `nextMinor_isLeast`, `nextMajor_isLeast`, `IsLeastAbove.unique`, `nextPatch_of_isNormal` ほか |
 | §9 | プレリリース | `PreRelease`, `PreReleaseIdentifier`, `PreReleaseId.ofBytes` | `preReleaseIdentifier_iff`, `alphanumericIdentifier_iff`, `PreReleaseIdentifier.toBytes_ofBytes` |
 | §10 | ビルドメタデータ | `Build`, `BuildIdentifier` | `buildIdentifier_iff`, `Version.Lt.build_irrelevant`, `Version.PrecedenceEq.of_build` |
 | §11.1〜§11.2 | major, minor, patch の順に数値比較 | `Version.Lt` | `Version.Lt.irrefl` / `trans` / `asymm` / `trichotomous` |
@@ -89,10 +89,27 @@ Swift 実装の値は `Components` に対応させる。数値識別子を整数
 - `Components.lt_trichotomous`, `lt_irrefl`, `lt_trans`, `lt_asymm`, `not_lt_of_precedenceEq`:
   したがって構成要素の比較も、優先順位の等しさを法とする全順序である。
 
+繰り上げ(`SemVer/Theorems/Increment.lean`, `SemVer/Model/IncrementCorrectness.lean`):
+
+仕様 §6〜§8 は、通常バージョンから次のリリースを出すときの規則しか定めておらず、プレリリース版の繰り上げには定めがない。
+このライブラリは繰り上げを §11 の順序だけで定める。結果は node-semver の `inc` と同じになる。
+
+| 操作 | 定義 | `1.2.3` | `1.2.3-rc.1` | `1.2.0-rc.1` |
+| --- | --- | --- | --- | --- |
+| `nextPatch` | 元より高い通常バージョンのうち最も低いもの | `1.2.4` | `1.2.3` | `1.2.0` |
+| `nextMinor` | 元より高く、パッチが 0 の通常バージョンのうち最も低いもの | `1.3.0` | `1.3.0` | `1.2.0` |
+| `nextMajor` | 元より高く、マイナーとパッチが 0 の通常バージョンのうち最も低いもの | `2.0.0` | `2.0.0` | `2.0.0` |
+
+- `nextPatch_isLeast`, `nextMinor_isLeast`, `nextMajor_isLeast`: 各関数が上の定義を満たす。
+- `IsLeastAbove.unique`: 定義を満たすバージョンは優先順位について一意。つまり結果は定義から一通りに決まる。
+- `nextPatch_of_isNormal` ほか: 通常バージョンに対しては、§6〜§8 の「1 上げて下位を 0 に戻す」と一致する。
+- `succDigits_spec`: 数字列のまま 1 を足した結果は、数値識別子のまま値がちょうど 1 大きい。
+- `Components.toVersion_nextPatch` ほか: バイト列のままの繰り上げは、仕様の繰り上げと一致する。
+
 ## Swift 実装との対応
 
 Swift のコード(`Sources/SemanticVersioning/`)は、下の Lean 定義を関数単位で写して書いてある。
-Lean の再帰は Swift ではループになっているが、分岐の構造は同じにしている。
+Lean の再帰は Swift ではループになっている箇所があるが、分岐の構造は同じにしている。
 
 | Swift | Lean | 仕様との関係を示す定理 |
 | --- | --- | --- |
@@ -110,16 +127,23 @@ Lean の再帰は Swift ではループになっているが、分岐の構造�
 | `Precedence.identifierLess`, `preReleaseLess` | `IdentifierLt`, `PreReleaseBytesLt` | `identifierLt_iff`, `preReleaseBytesLt_iff` |
 | `Precedence.less`, `precedenceEqual` | `Components.Lt`, `Components.PrecedenceEq` | `Components.lt_iff`, `Components.precedenceEq_iff` |
 | `SemanticVersion` の `<`, `==` | 上の 2 つ | `Components.lt_trichotomous` ほか |
+| `Digits.decimal` | `decimalDigits` | `numericIdentifier_decimalDigits`, `decimalValue_decimalDigits` |
+| `Digits.successor` | `succDigits` | `succDigits_spec` |
+| `Increment.nextPatch`, `nextMinor`, `nextMajor` | `Components.nextPatch`, `nextMinor`, `nextMajor` | `Components.toVersion_nextPatch` ほか, `Components.WF.nextPatch_wf` ほか |
+| `SemanticVersion.init(major:minor:patch:)` | `Version.toComponents` | `Version.WF.toComponents_wf`, `Version.WF.toVersion_toComponents` |
+| `SemanticVersion.isIdentical(to:)` | 構成要素の等しさ | `Components.eq_iff_render_eq` |
 
 この対応そのものは機械的に証明されていない。Swift のコードと Lean の定義が同じであることは、次の 2 つで支えている。
 
-- 関数ごとに 1 対 1 で照合できる小ささに保つ(Swift 側の中身は 3 ファイル、コメント込みで 303 行)。
+- 関数ごとに 1 対 1 で照合できる小ささに保つ(Swift 側の中身は 4 ファイル、コメント込みで 393 行)。
 - `Vectors.lean` が Lean の定義を実行して出力したベクタと、Swift の結果を突き合わせる
   (`Tests/SemanticVersioningTests/VectorTests.swift`)。
   - 文字クラス: 256 個のバイトすべて。
   - 文法: 実装が区別するバイトの種類ごとの代表 7 文字で、7 文字以下の文字列すべて(960,800 件)と、
     妥当な接頭辞の後ろに 4〜5 文字を続けた文字列すべて(28,011 件)。
   - 優先順位: 見本約 1,400 個のすべての組。
+  - 繰り上げ: 見本約 1,400 個それぞれの、パッチ・マイナー・メジャーの繰り上げ結果。
+  - 10 進表記: `UInt` の上限までの境界値。
 
 Swift のコンパイラと標準ライブラリ(`Array`、`UInt8` の比較など)は信頼する。
 
@@ -133,4 +157,3 @@ Swift のコンパイラと標準ライブラリ(`Array`、`UInt8` の比較な�
 
 - Swift のループと Lean の再帰の対応を、Lean 側にループの形の関数を置いて証明すること。
 - DFA の遷移表の生成と、それが `ValidSemVer` と同じ言語を受理することの証明。
-- `Increment.lean` でプレリリースとビルドメタデータを落とす扱いは仮置き。

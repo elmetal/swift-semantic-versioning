@@ -4,9 +4,11 @@
 // 識別子の判定は BNF そのものではなく、BNF と同値だと証明済みの条件
 // (Formal/SemVer/Theorems/Identifiers.lean)を使う。
 
-/// 区切り記号と `0` の ASCII コード。Lean: `SemVer.Spec.Ascii`
+/// 区切り記号と数字の ASCII コード。Lean: `SemVer.Spec.Ascii`(`1` と `9` は Lean では `0x31`、`0x39` と直接書く)
 enum Ascii {
     static let zero: UInt8 = 0x30
+    static let one: UInt8 = 0x31
+    static let nine: UInt8 = 0x39
     static let dot: UInt8 = 0x2E
     static let hyphen: UInt8 = 0x2D
     static let plus: UInt8 = 0x2B
@@ -74,7 +76,7 @@ enum Grammar {
 /// 数値識別子も数字列のまま持つので、桁数に上限がなく、オーバーフローが起きない。
 ///
 /// Lean: `SemVer.Spec.Components`
-struct Components: Sendable {
+struct Components: Equatable, Sendable {
     var major: [UInt8]
     var minor: [UInt8]
     var patch: [UInt8]
