@@ -1,6 +1,7 @@
 import SemVer.Theorems.Increment
 import SemVer.Parser.Version
 import SemVer.Model.Correctness
+import SemVer.Model.IncrementCorrectness
 
 /-!
 # 公理の監査
@@ -119,3 +120,26 @@ info: 'SemVer.Spec.Components.precedenceEq_iff' depends on axioms: [propext, Cla
 info: 'SemVer.Spec.Components.lt_trichotomous' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs in #print axioms Components.lt_trichotomous
+
+/-- info: 'SemVer.succDigits_spec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms succDigits_spec
+
+/--
+info: 'SemVer.Spec.Components.toVersion_nextPatch' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.toVersion_nextPatch
+
+/--
+info: 'SemVer.Spec.Components.toVersion_nextMinor' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.toVersion_nextMinor
+
+/--
+info: 'SemVer.Spec.Components.toVersion_nextMajor' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.toVersion_nextMajor
+
+/--
+info: 'SemVer.Spec.Components.eq_iff_render_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms Components.eq_iff_render_eq
