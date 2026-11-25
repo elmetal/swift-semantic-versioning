@@ -128,3 +128,74 @@ struct PrecedenceTests {
         #expect(a.description != b.description)
     }
 }
+
+@Suite("数値からの生成と厳密な一致")
+struct ConstructionTests {
+    @Test("数値から作れる")
+    func fromNumbers() throws {
+        let version = SemanticVersion(major: 1, minor: 20, patch: 300)
+        #expect(version.description == "1.20.300")
+        #expect(version.isIdentical(to: try #require(SemanticVersion("1.20.300"))))
+        #expect(!version.isPrerelease)
+        #expect(version.buildMetadataIdentifiers.isEmpty)
+
+        #expect(SemanticVersion(major: 0, minor: 0, patch: 0).description == "0.0.0")
+        let max = SemanticVersion(major: .max, minor: .max, patch: .max)
+        #expect(max.description == "\(UInt.max).\(UInt.max).\(UInt.max)")
+    }
+
+    @Test("isIdentical はビルドメタデータまで比べる")
+    func identical() throws {
+        let a = try #require(SemanticVersion("1.0.0-rc.1+a"))
+        let b = try #require(SemanticVersion("1.0.0-rc.1+b"))
+        let c = try #require(SemanticVersion("1.0.0-rc.1+a"))
+        #expect(a == b)
+        #expect(!a.isIdentical(to: b))
+        #expect(a.isIdentical(to: c))
+        #expect(a.isIdentical(to: a))
+    }
+}
+
+@Suite("繰り上げ")
+struct IncrementTests {
+    private func next(
+        _ string: String, _ keyPath: KeyPath<SemanticVersion, SemanticVersion>
+    ) throws -> String {
+        try #require(SemanticVersion(string))[keyPath: keyPath].description
+    }
+
+    @Test("通常バージョンは数値を 1 上げて下位を 0 に戻す")
+    func normal() throws {
+        #expect(try next("1.2.3", \.nextPatch) == "1.2.4")
+        #expect(try next("1.2.3", \.nextMinor) == "1.3.0")
+        #expect(try next("1.2.3", \.nextMajor) == "2.0.0")
+        #expect(try next("1.2.9", \.nextPatch) == "1.2.10")
+        #expect(try next("1.9.9", \.nextMinor) == "1.10.0")
+        #expect(try next("99.99.99", \.nextMajor) == "100.0.0")
+    }
+
+    @Test("プレリリース版は、条件を満たせば対応する通常バージョンになる")
+    func prerelease() throws {
+        #expect(try next("1.2.3-rc.1", \.nextPatch) == "1.2.3")
+        #expect(try next("1.2.3-rc.1", \.nextMinor) == "1.3.0")
+        #expect(try next("1.2.0-rc.1", \.nextMinor) == "1.2.0")
+        #expect(try next("1.2.0-rc.1", \.nextMajor) == "2.0.0")
+        #expect(try next("2.0.0-rc.1", \.nextMajor) == "2.0.0")
+        #expect(try next("1.0.0-5", \.nextMajor) == "1.0.0")
+    }
+
+    @Test("ビルドメタデータは結果に付かない")
+    func buildMetadata() throws {
+        #expect(try next("1.2.3+build", \.nextPatch) == "1.2.4")
+        #expect(try next("1.2.3-rc.1+build", \.nextPatch) == "1.2.3")
+    }
+
+    @Test("整数型に収まらない桁数でも繰り上がる")
+    func huge() throws {
+        #expect(try next("1.2.18446744073709551615", \.nextPatch) == "1.2.18446744073709551616")
+        #expect(
+            try next("99999999999999999999999.0.0", \.nextMajor) == "100000000000000000000000.0.0")
+        #expect(SemanticVersion(major: .max, minor: 0, patch: 0).nextMajor.description
+            == "18446744073709551616.0.0")
+    }
+}
